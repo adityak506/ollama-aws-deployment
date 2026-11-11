@@ -1,0 +1,221 @@
+DOCKER COMPOSE EXPLAINED
+
+Before understanding docker-compose.yml, let's first understand what Docker Compose is and why we need it.
+
+------------------------------------------------------------
+
+What is Docker?
+
+Docker allows us to package an application along with all its dependencies into a container.
+
+For example, we can run a FastAPI application inside one Docker container or an Ollama server inside another Docker
+container.
+
+However, Docker itself only manages individual containers.
+
+------------------------------------------------------------
+🖼️ Docker Image
+Think of an image like a recipe card.
+
+It has all the instructions: which software to install, what files to include, what environment to set up.
+
+But the recipe card itself doesn’t cook anything — it’s just the blueprint.
+
+📦 Docker Container
+A container is like the actual dish cooked from that recipe.
+
+It’s a running instance of the image, alive and working.
+
+You can have multiple containers (dishes) made from the same image (recipe).
+------------------------------------------------------------
+
+The Problem
+
+Imagine our project has multiple services.
+
+1. Ollama
+2. FastAPI
+
+If we use Docker alone, we would have to manually:
+
+- Start the Ollama container
+- Start the FastAPI container
+- Configure networking between them
+- Configure port mappings
+- Mount storage volumes
+- Pass environment variables
+- Ensure the containers start in the correct order
+
+Managing multiple containers manually quickly becomes difficult.
+
+------------------------------------------------------------
+
+What is Docker Compose?
+
+Docker Compose is a tool that allows us to define and manage multiple Docker containers using a single configuration
+file called docker-compose.yml.
+
+Instead of running several Docker commands manually, we simply describe our complete application in one YAML file.
+
+Then, a single command starts the entire application.
+
+docker compose up -d
+
+Docker Compose automatically creates the containers, connects them together, configures networking, mounts storage, and starts everything in the correct order.
+
+You can think of Docker Compose as an orchestrator for multiple Docker containers.
+
+------------------------------------------------------------
+
+How Docker Compose Helps in This Project
+
+Our project consists of two containers.
+
+Container 1
+
+Ollama
+
+Purpose:
+Hosts the Large Language Model and performs inference.
+
+------------------------------------------------------------
+
+Container 2
+
+FastAPI
+
+Purpose:
+Exposes REST API endpoints that external applications can use to communicate with the deployed LLM.
+
+Instead of directly talking to Ollama, external applications communicate with the FastAPI service.
+
+------------------------------------------------------------
+
+How Both Containers Communicate
+
+Both containers are created by Docker Compose.
+
+Since they belong to the same Docker Compose project, Docker automatically creates a private network between them.
+
+This allows the FastAPI container to communicate with the Ollama container simply by using its service name.
+It  will resolve these two services (FastAPI and Ollam) in a way that they communicate flawlessly with each
+other and allows the client to draw inference.
+
+Instead of writing:
+
+http://localhost:11434
+
+the FastAPI container uses:
+
+http://ollama:11434
+
+Docker automatically resolves "ollama" to the correct container. 
+
+------------------------------------------------------------
+
+What Our docker-compose.yml File Does
+
+Our docker-compose.yml performs the following tasks.
+
+1.
+
+Creates an Ollama container using the official Ollama Docker image.
+
+------------------------------------------------------------
+
+2.
+
+Creates a FastAPI container using the Dockerfile present in this project. We will build a DockerFile present at
+the root of this project.
+
+------------------------------------------------------------
+
+3.
+
+Exposes the Ollama API on port 11434.
+
+------------------------------------------------------------
+
+4.
+
+Exposes the FastAPI application on port 8000.
+
+------------------------------------------------------------
+
+5.
+
+Creates a persistent Docker volume to store downloaded Ollama models.
+
+This ensures that models are not downloaded again every time the containers restart.
+
+------------------------------------------------------------
+
+6.
+
+Passes important environment variables to the FastAPI container.
+
+These include:
+
+OLLAMA_BASE_URL
+
+Location of the Ollama server.
+
+OLLAMA_MODEL
+
+Default model used for inference.
+
+------------------------------------------------------------
+
+7.
+
+Ensures that the FastAPI container starts only after the Ollama container has started.
+
+------------------------------------------------------------
+
+8.
+
+Automatically restarts the containers if they stop unexpectedly.
+
+------------------------------------------------------------
+
+Overall Flow
+
+                docker compose up
+
+                        │
+
+        Creates Ollama Container
+
+                        │
+
+        Creates FastAPI Container
+
+                        │
+
+      FastAPI connects to Ollama
+
+                        │
+
+      User sends request to FastAPI
+
+                        │
+
+      FastAPI forwards request to Ollama
+
+                        │
+
+      Ollama generates response
+
+                        │
+
+      FastAPI returns response to user
+
+------------------------------------------------------------
+
+Key Learning
+
+Docker is used to create and run individual containers.
+
+Docker Compose is used to manage multiple containers that work together as a single application.
+
+In this project, Docker Compose allows us to deploy an entire LLM serving system using just one command instead of manually configuring each container.

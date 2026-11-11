@@ -1,0 +1,206 @@
+
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/vikashishere/ollama-aws-deployment.git
+git push -u origin main
+
+---------------------------------------------------------------------
+
+PROJECT DEPLOYMENT GUIDE
+
+Objective:
+Deploy an open-source LLM on an AWS EC2 instance using Ollama, expose it through a FastAPI API, and consume it from any local application such as Streamlit, LangChain, or your own Python scripts.
+
+------------------------------------------------------------
+
+STEP 1: Launch an EC2 Instance
+
+- Login to AWS Console
+- Search for EC2
+- Click Launch Instance
+
+Configuration:
+
+Instance Name:
+my-ollama-server
+
+Operating System:
+Ubuntu Server 22.04 LTS (refer to the lecture for exact version)
+
+Instance Type:
+t3.large
+
+Key Pair:
+- Create a new RSA key pair
+- Download the .pem file
+- Store it safely
+
+------------------------------------------------------------
+
+STEP 2: Configure Security Group
+
+Add the following inbound rules:
+
+SSH
+Port: 22
+Source: My IP
+
+Custom TCP
+Port: 8000
+Source: Anywhere (0.0.0.0/0)
+
+Custom TCP
+Port: 11434
+Source: My IP
+
+------------------------------------------------------------
+
+STEP 3: Configure Storage
+
+Storage:
+30 GB
+
+Volume Type:
+gp3
+
+Launch the instance.
+
+------------------------------------------------------------
+
+STEP 4: Connect to EC2
+
+Mac/Linux
+chmod 400 ollama-key.pem
+ssh -i ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
+
+Windows (Git Bash)
+ssh -i my-ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
+------------------------------------------------------------
+
+STEP 5: Install Git
+
+sudo apt update
+sudo apt install git -y
+
+------------------------------------------------------------
+
+STEP 6: Clone the Repository
+
+git clone <YOUR_GITHUB_REPOSITORY>
+
+cd <your-github-repo-name>
+
+Verify files: ls
+
+------------------------------------------------------------
+
+STEP 7: Deploy the Application
+
+chmod +x setup.sh
+sudo ./setup.sh --model llama3.2
+
+The script will automatically:
+
+- Install Docker
+- Install Docker Compose
+- Start Ollama
+- Start FastAPI
+- Download the specified model
+
+------------------------------------------------------------
+
+STEP 8: Verify the Deployment
+
+Health Check
+
+http://<EC2_PUBLIC_IP>:8000/health
+
+Available Models
+http://<EC2_PUBLIC_IP>:8000/models
+
+Test the API
+
+curl -X POST http://<EC2_PUBLIC_IP>:8000/generate \
+-H "Content-Type: application/json" \
+-d '{
+      "model":"llama3.2",
+      "prompt":"Hello"
+    }'
+
+------------------------------------------------------------
+
+STEP 9: Test Using Streamlit
+
+On your local machine:
+
+A> Clone the same repository.
+B> Create a virtual environment: uv venv
+C> Activate it:
+Windows: .venv\Scripts\activate
+Mac/Linux: source .venv/bin/activate
+
+D> Install dependencies.
+uv pip install -r requirements.txt
+pip install streamlit
+
+E> Open streamlit_app.py & change
+
+API_URL = "http://localhost:8000"
+to
+API_URL = "http://<EC2_PUBLIC_IP>:8000"
+
+F> Run Streamlit:
+streamlit run streamlit_app.py
+
+G> Open: http://localhost:8501
+Select a model.
+Enter a prompt.
+Verify the response is coming from your EC2-hosted LLM.
+
+------------------------------------------------------------
+
+STEP 10: Use the API in Any Python Application
+
+Example
+
+import requests
+
+response = requests.post(
+    "http://<EC2_PUBLIC_IP>:8000/generate",
+    json={
+        "model":"llama3.2",
+        "prompt":"Explain RAG."
+    }
+)
+
+print(response.json())
+
+------------------------------------------------------------
+
+Useful Docker Commands
+
+Stop all containers
+
+docker compose down
+
+Restart containers
+
+docker compose up -d
+
+View logs
+
+docker compose logs -f
+
+------------------------------------------------------------
+
+Learning Outcome
+
+You have successfully:
+
+- Deployed an open-source LLM on AWS EC2
+- Hosted the model using Ollama
+- Exposed it through a FastAPI REST API
+- Tested it using a Streamlit client
+- Built a reusable LLM endpoint that any application can consume instead of using OpenAI or Gemini APIs

@@ -1,0 +1,108 @@
+What does setup.sh do?
+
+Instead of manually performing multiple deployment steps one by one, this
+shell script automates the complete deployment of our LLM application on
+the AWS EC2 instance.
+
+Behind the scenes, it performs the following tasks:
+
+1. Parses the command-line arguments, such as the model name and API port.
+
+2. Checks whether Docker is already installed. If not, it automatically
+   installs Docker and Docker Compose on the EC2 instance.
+
+3. Copies all project files to a dedicated deployment directory
+   (/opt/ollama-chatbot).
+
+4. Updates the Docker Compose configuration if a custom API port is provided.
+
+5. Starts the complete application stack using Docker Compose, including:
+      - Ollama Container
+      - FastAPI Container
+
+6. Waits for the Ollama service to become available.
+
+7. Downloads (pulls) the specified LLM into the Ollama container, if it is
+   not already available.
+
+8. Verifies that the deployment has completed successfully.
+
+9. Displays useful deployment information, including:
+      - LLM API URL
+      - Ollama API URL
+      - Useful Docker commands
+      - API testing command
+      - Streamlit client command
+
+10. At this point, the deployed LLM is ready to accept requests from any
+    external application, such as Streamlit, LangChain, CrewAI, or any
+    custom Python application.
+
+--------------------------XXXXXXXXX-------------------------------
+
+
+------------------------------------------------------------
+
+How Does app.py Actually Start?
+
+One common question is: "We never directly execute app.py anywhere. So how does our FastAPI application start?"
+The execution flow is as follows:
+
+1. We manually execute the deployment script.
+sudo ./setup.sh --model llama3.2
+
+2. The setup.sh script internally runs the following command.
+docker compose up -d --build
+
+3. Docker Compose automatically reads the docker-compose.yml file.
+This file describes all the services (containers) that need to be created for our application.
+
+4. For the API service, docker-compose.yml contains:
+build: .
+This tells Docker to build a Docker image using the Dockerfile present in the project directory.
+
+5. Docker now reads the Dockerfile and executes each instruction one by one.
+The final instruction in the Dockerfile is:
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+6. This command starts the Uvicorn web server.
+Uvicorn then imports the FastAPI application from app.py.
+The notation:
+app:app
+
+means: First "app"  →  app.py (the Python file)
+Second "app" →  app = FastAPI(...) (the FastAPI application object)
+
+7. Once Uvicorn starts successfully, our FastAPI application begins listening on port 8000 and the following API endpoints become available:
+- /health
+- /models
+- /generate
+
+Execution Flow
+
+You
+    │
+    ▼
+sudo ./setup.sh --model llama3.2
+    │
+    ▼
+setup.sh
+    │
+    ▼
+docker compose up -d --build
+    │
+    ▼
+Docker reads docker-compose.yml
+    │
+    ▼
+Docker builds the API container using Dockerfile
+    │
+    ▼
+Docker runs:
+CMD ["uvicorn", "app:app", ...]
+    │
+    ▼
+Uvicorn starts app.py
+    │
+    ▼
+FastAPI server is now ready to receive requests.
