@@ -1,9 +1,9 @@
 
-git init
-git add .
+git init #for initialization
+git add . #for adding the files to be moved to Git
 git commit -m "first commit"
 git branch -M main
-git remote add origin https://github.com/vikashishere/ollama-aws-deployment.git
+git remote add origin https://github.com/adityak506/ollama-aws-deployment.git
 git push -u origin main
 
 ---------------------------------------------------------------------
