@@ -32,7 +32,7 @@ Operating System:
 Ubuntu Server 26.04 LTS (refer to the lecture for exact version)
 
 Instance Type:
-t3.large
+t3.large or m7i-flex.large
 
 Key Pair:
 - Create a new RSA key pair such as my-ollama-key
@@ -99,7 +99,7 @@ ssh -i ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
 Windows (Git Bash)
 ssh -i my-ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
 For example:
-ssh -i my-ollama-key.pem ubuntu@16.16.219.247
+ssh -i my-ollama-key.pem ubuntu@16.16.429.297
 
 using this you will interact with ubuntu system
 ------------------------------------------------------------
@@ -153,12 +153,12 @@ Health Check
 
 http://<EC2_PUBLIC_IP>:8000/health
 For example:
-http://16.16.219.247:8000/health
+http://16.16.429.297:8000/health
 
 Available Models
 http://<EC2_PUBLIC_IP>:8000/models
 For example:
-http://16.16.219.247:8000/models
+http://16.16.429.297:8000/models
 
 Test the API
 
@@ -190,7 +190,7 @@ E> Open streamlit_app.py & change
 API_URL = "http://localhost:8000"
 to
 API_URL = "http://<EC2_PUBLIC_IP>:8000"
-example: http://16.16.219.247:8000/
+example: http://16.16.429.297:8000/
 
 F> Run Streamlit:
 streamlit run streamlit_app.py
