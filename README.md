@@ -42,21 +42,21 @@ Proprietary LLM APIs (such as OpenAI or Google Gemini) charge per token and send
 ```mermaid
 flowchart LR
     subgraph Local["Local Machine / Client"]
-        UI["Streamlit Web UI\n(:8501)"]
+        UI["Streamlit Web UI<br/>Port 8501"]
         ClientApp["Python Scripts / LangChain"]
     end
 
     subgraph AWS["AWS Cloud (EC2 Instance)"]
         subgraph DockerNetwork["Docker Bridge Network"]
-            FastAPI["FastAPI Application\n(:8000)\nReverse Proxy / API Layer"]
-            Ollama["Ollama Engine\n(:11434)\nModel Execution & Cache"]
-            Volume[("Ollama Volume\n/root/.ollama")]
+            FastAPI["FastAPI Application<br/>Port 8000<br/>Reverse Proxy / API Layer"]
+            Ollama["Ollama Engine<br/>Port 11434<br/>Model Execution & Cache"]
+            Volume[("Ollama Volume<br/>/root/.ollama")]
         end
     end
 
     UI -->|HTTP Requests| FastAPI
     ClientApp -->|HTTP Requests| FastAPI
-    FastAPI -->|Async HTTP (httpx)| Ollama
+    FastAPI -->|Async HTTP via httpx| Ollama
     Ollama --- Volume
 ```
 
