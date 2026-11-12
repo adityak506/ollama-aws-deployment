@@ -6,12 +6,14 @@ git branch -M main
 git remote add origin https://github.com/adityak506/ollama-aws-deployment.git
 git push -u origin main
 
+https://github.com/adityak506/ollama-aws-deployment.git
 ---------------------------------------------------------------------
 
 PROJECT DEPLOYMENT GUIDE
 
 Objective:
-Deploy an open-source LLM on an AWS EC2 instance using Ollama, expose it through a FastAPI API, and consume it from any local application such as Streamlit, LangChain, or your own Python scripts.
+Deploy an open-source LLM on an AWS EC2 instance using Ollama, expose it through a FastAPI API, and consume it 
+from any local application such as Streamlit, LangChain, or your own Python scripts.
 
 ------------------------------------------------------------
 
@@ -27,20 +29,38 @@ Instance Name:
 my-ollama-server
 
 Operating System:
-Ubuntu Server 22.04 LTS (refer to the lecture for exact version)
+Ubuntu Server 26.04 LTS (refer to the lecture for exact version)
 
 Instance Type:
 t3.large
 
 Key Pair:
-- Create a new RSA key pair
+- Create a new RSA key pair such as my-ollama-key
 - Download the .pem file
 - Store it safely
+using this credentials that we need to access EC2 using laptop via terminal.
 
+Allow MSSQL traffic from
+Allow SSH traffic from
+Allow HTTPS traffic from the internet
+Allow HTTP traffic from the internet
+
+Step: Configure 
+
+Storage:
+30 GB
+
+Volume Type:
+gp3
+
+Launch the instance.
 ------------------------------------------------------------
 
-STEP 2: Configure Security Group
+STEP 2: Configure Security Group 
+Security Group is a setting where you play around the ports or allowed ports or allowed outbound or inbound rule. 
 
+Open the instance
+Click Security -> then click Security groups created
 Add the following inbound rules:
 
 SSH
@@ -54,7 +74,8 @@ Source: Anywhere (0.0.0.0/0)
 Custom TCP
 Port: 11434
 Source: My IP
-
+#this is used for my IP not for others as all are not allowed to directly hit Ollama service instead they
+will hit FastAPI service and then it will Ollama service
 ------------------------------------------------------------
 
 STEP 3: Configure Storage
@@ -77,6 +98,10 @@ ssh -i ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
 
 Windows (Git Bash)
 ssh -i my-ollama-key.pem ubuntu@<EC2_PUBLIC_IP>
+For example:
+ssh -i my-ollama-key.pem ubuntu@16.16.219.247
+
+using this you will interact with ubuntu system
 ------------------------------------------------------------
 
 STEP 5: Install Git
@@ -89,8 +114,12 @@ sudo apt install git -y
 STEP 6: Clone the Repository
 
 git clone <YOUR_GITHUB_REPOSITORY>
+for example:
+git clone https://github.com/adityak506/ollama-aws-deployment.git
 
 cd <your-github-repo-name>
+for example:
+cd ollama-aws-deployment
 
 Verify files: ls
 
@@ -100,6 +129,13 @@ STEP 7: Deploy the Application
 
 chmod +x setup.sh
 sudo ./setup.sh --model llama3.2
+
+On the EC2 instance, try running it explicitly with Bash:
+
+cd ~/ollama-aws-deployment
+head -n 1 setup.sh
+command -v bash
+sudo bash ./setup.sh --model llama3.2
 
 The script will automatically:
 
@@ -116,9 +152,13 @@ STEP 8: Verify the Deployment
 Health Check
 
 http://<EC2_PUBLIC_IP>:8000/health
+For example:
+http://16.16.219.247:8000/health
 
 Available Models
 http://<EC2_PUBLIC_IP>:8000/models
+For example:
+http://16.16.219.247:8000/models
 
 Test the API
 
@@ -150,6 +190,7 @@ E> Open streamlit_app.py & change
 API_URL = "http://localhost:8000"
 to
 API_URL = "http://<EC2_PUBLIC_IP>:8000"
+example: http://16.16.219.247:8000/
 
 F> Run Streamlit:
 streamlit run streamlit_app.py
